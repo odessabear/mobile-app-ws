@@ -1,15 +1,23 @@
 package com.amikhailov.springstudying.mobileappws.ui.controller;
 
 import com.amikhailov.springstudying.mobileappws.ui.model.UserRest;
+import com.amikhailov.springstudying.mobileappws.ui.model.request.UserDetailsRequestModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 
 @RestController
 @RequestMapping("users")
 public class UserController {
+
+    Map<String, UserRest> users;
 
     @GetMapping
     public String getUsers(@RequestParam(value = "page", defaultValue = "1") int page,
@@ -22,24 +30,46 @@ public class UserController {
             MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<UserRest> getUser(@PathVariable String userId) {
 
+//        UserRest returnValue = new UserRest();
+//
+//        returnValue.setFirstName("Alex");
+//        returnValue.setLastName("Mikhailov");
+//        returnValue.setEmail("myEmail@test.com");
+
+        if (users.containsKey(userId)) {
+            return new ResponseEntity<>(users.get(userId), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+    }
+
+
+    @PostMapping(consumes = {MediaType.APPLICATION_XML_VALUE,
+            MediaType.APPLICATION_JSON_VALUE},
+            produces = {MediaType.APPLICATION_XML_VALUE,
+                    MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<UserRest> createUser(@Valid @RequestBody UserDetailsRequestModel userDetails) {
         UserRest returnValue = new UserRest();
 
-        returnValue.setFirstName("Alex");
-        returnValue.setLastName("Mikhailov");
-        returnValue.setEmail("myEmail@test.com");
+        returnValue.setFirstName(userDetails.getFirstName());
+        returnValue.setLastName(userDetails.getLastName());
+        returnValue.setEmail(userDetails.getEmail());
 
-        return new ResponseEntity<UserRest>(returnValue, HttpStatus.BAD_REQUEST);
+        String userId = UUID.randomUUID().toString();
+        returnValue.setUserId(userId);
+
+        if (users == null) users = new HashMap<>();
+        users.put(userId, returnValue);
+
+        return new ResponseEntity<>(returnValue, HttpStatus.OK);
     }
 
-    @PostMapping
-    public String createUser() {
-        return "create user was called";
-    }
 
     @PutMapping
     public String updateUser() {
         return "update user was called";
     }
+
 
     @DeleteMapping
     public String deleteUser() {
