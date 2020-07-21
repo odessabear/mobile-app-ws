@@ -1,6 +1,8 @@
 package com.amikhailov.springstudying.mobileappws.ui.controller;
 
+import com.amikhailov.springstudying.mobileappws.exceptions.UserServiceException;
 import com.amikhailov.springstudying.mobileappws.ui.model.UserRest;
+import com.amikhailov.springstudying.mobileappws.ui.model.request.UpdateUserDetailsRequestModel;
 import com.amikhailov.springstudying.mobileappws.ui.model.request.UserDetailsRequestModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +31,8 @@ public class UserController {
     @GetMapping(path = "/{userId}", produces = {MediaType.APPLICATION_XML_VALUE,
             MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<UserRest> getUser(@PathVariable String userId) {
+
+        if (true) throw new UserServiceException("A user service exception is thrown");
 
 //        UserRest returnValue = new UserRest();
 //
@@ -65,14 +69,28 @@ public class UserController {
     }
 
 
-    @PutMapping
-    public String updateUser() {
-        return "update user was called";
+    @PutMapping(path = "/{userId}", consumes = {MediaType.APPLICATION_XML_VALUE,
+            MediaType.APPLICATION_JSON_VALUE},
+            produces = {MediaType.APPLICATION_XML_VALUE,
+                    MediaType.APPLICATION_JSON_VALUE})
+    public UserRest updateUser(@PathVariable String userId, @RequestBody UpdateUserDetailsRequestModel userDetails) {
+
+        UserRest storedUserDetails = users.get(userId);
+        storedUserDetails.setFirstName(userDetails.getFirstName());
+        storedUserDetails.setLastName(userDetails.getLastName());
+
+        users.put(userId, storedUserDetails);
+
+        return storedUserDetails;
     }
 
 
-    @DeleteMapping
-    public String deleteUser() {
-        return "delete user was called";
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+
+        users.remove(id);
+
+        return ResponseEntity.noContent().build();
+
     }
 }
